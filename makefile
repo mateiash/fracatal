@@ -1,8 +1,8 @@
-all: main.o generator.o
+all: prepare main.o generator.o
 	g++ build/main.o build/generator.o -o build/fractal -lSDL2
 
 prepare:
-	mkdir build
+	mkdir -p build
 
 generator.o: src/generator.cpp
 	g++ -c src/generator.cpp -o build/generator.o

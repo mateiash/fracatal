@@ -1,5 +1,6 @@
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_keycode.h>
+#include <SDL2/SDL_surface.h>
 #include <SDL2/SDL_timer.h>
 #include <iostream>
 
@@ -8,6 +9,8 @@
 #include "generator.h"
 
 const std::string PROGRAM_NAME = "Fracatal";
+
+const int WIN_SIZE = 720;
 
 int main(int argc, char** args){
     // mandelbrot se selecteaza un nr complex c
@@ -28,7 +31,7 @@ int main(int argc, char** args){
 	} 
 
 	// Create our window
-	window = SDL_CreateWindow( PROGRAM_NAME.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 720, 720, SDL_WINDOW_SHOWN );
+	window = SDL_CreateWindow( PROGRAM_NAME.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIN_SIZE, WIN_SIZE, SDL_WINDOW_SHOWN );
 
     // Make sure creating the window succeeded
 	if ( !window ) {
@@ -52,21 +55,20 @@ int main(int argc, char** args){
     // rendering shit yeah lets go
 
 	GeneratorSettings saved1;
-    saved1.SCALE = 0.032;
-    saved1.CENTER_X = 0.424;
-    saved1.CENTER_Y = 0.335;
+    saved1.SCALE = 1;
+    saved1.CENTER_X = 0.;
+    saved1.CENTER_Y = 0.;
     saved1.SIZE = 256;
-    saved1.ITERATIONS = 64;
+    saved1.ITERATIONS = 128;
     saved1.BOUND = 4;
 
-    ViewGenerator generator;
-    generator.settings = saved1;
+    ViewGenerator generator(saved1);
 
 	SDL_Rect dest;
 	dest.x = 0;
 	dest.y = 0;
-	dest.w = 720;
-	dest.h = 720;
+	dest.w = WIN_SIZE;
+	dest.h = WIN_SIZE;
 
 	SDL_Surface *view = SDL_CreateRGBSurfaceWithFormat(
 		0,
@@ -78,10 +80,12 @@ int main(int argc, char** args){
 	double adder = 0.1;
 	SDL_Event ev;
 	int running = 1;
+	generator.gen(view);
+	SDL_BlitScaled(view, NULL, winSurface, &dest);
 	while(running){
 		if(SDL_PollEvent(&ev) != 0){
 			if(ev.type == SDL_QUIT){
-				break;
+				running = 0;
 			}
 			if(ev.type == SDL_KEYDOWN){
 				switch(ev.key.keysym.sym){
@@ -103,14 +107,19 @@ int main(int argc, char** args){
 					case SDLK_s:
 						generator.settings.CENTER_Y -= adder*generator.settings.SCALE;
 						break;
-						
+					case SDLK_r:
+						generator.settings = saved1;
+						break;
+					case SDLK_SPACE:
+						int result = SDL_SaveBMP(view, "screenshot.bmp");
+						break;
 				}
+				generator.gen(view);
+				//SDL_Delay(100);
+				SDL_BlitScaled(view, NULL, winSurface, &dest);
 			}
 		}
-
-		generator.gen(view);
-		//SDL_Delay(100);
-		SDL_BlitScaled(view, NULL, winSurface, &dest);
+		
 		SDL_UpdateWindowSurface( window );
 	}
 

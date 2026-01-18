@@ -17,6 +17,8 @@ struct GeneratorSettings{
 
 class ViewGenerator {
     public:
+        ViewGenerator(GeneratorSettings set);
+
         GeneratorSettings settings;
 
         void gen(SDL_Surface* surface);

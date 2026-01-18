@@ -2,12 +2,19 @@
 #include <fstream>
 #include <complex>
 #include <string>
+#include <cmath>
 
 #include <SDL2/SDL.h>
 
 #include "generator.h"
 
 using namespace std::complex_literals;
+
+const float ln2 = 0.69314718056;
+
+ViewGenerator::ViewGenerator(GeneratorSettings set){
+    settings = set;
+}
 
 void ViewGenerator::gen(SDL_Surface* surface){
     Uint32 *pixels = (Uint32 *)surface->pixels;
@@ -43,10 +50,16 @@ void ViewGenerator::gen(SDL_Surface* surface){
 
             }
 
+            float sn = (float) i + 1.0 - log(log(abs(z))) / ln2;
+            float n = (float) i;
             uint8_t R = 0;
-            uint8_t G = 255 * ((float) i / (float) ITERATIONS);
+            uint8_t G = 255 * (( sn ) / (float) ITERATIONS);
             uint8_t B = 0;
-        
+            
+            if(i == ITERATIONS){
+                G = 255;
+            }
+
             R = G;
             B = G;
 
